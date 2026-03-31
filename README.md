@@ -146,4 +146,4 @@ Implementation decisions are cross-referenced against these findings.
 
 ## License
 
-Private — WorldStar Betting partner project.
+MIT
