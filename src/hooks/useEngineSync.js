@@ -63,6 +63,7 @@ export function useEngineSync(engine) {
           return {
             ...prev,
             countdownRemainingMs: s.countdownRemainingMs,
+            multiplier: s.crashMultiplier,
           };
         }
         return prev;

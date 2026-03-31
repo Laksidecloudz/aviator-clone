@@ -59,6 +59,7 @@ function TopPlayerCard({ player }) {
 export function BetTable() {
   const [tab, setTab] = useState('all');
   const [bets] = useState(() => generateBets());
+  const totalBets = 618;
 
   const filteredBets = useMemo(() => {
     if (tab === 'previous') {
@@ -75,6 +76,13 @@ export function BetTable() {
 
   return (
     <div className="bet-table">
+      <div className="player-count-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="player-count-icon">
+          <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+        </svg>
+        <span className="player-count-text">{bets.length}/{totalBets} Bets</span>
+      </div>
+
       <div className="bet-table-tabs">
         <button className={`bet-tab ${tab === 'all' ? 'active' : ''}`} onClick={() => setTab('all')}>All Bets</button>
         <button className={`bet-tab ${tab === 'previous' ? 'active' : ''}`} onClick={() => setTab('previous')}>Previous</button>
@@ -90,15 +98,18 @@ export function BetTable() {
       ) : (
         <>
           <div className="bet-table-header">
-            <span>Player</span><span>Bet</span><span>X</span><span>Win</span>
+            <span></span><span>BETS</span><span>PAYOUT</span><span>CASHED OUT</span>
           </div>
           <div className="bet-table-body">
             {filteredBets.map((bet) => (
               <div className={`bet-row ${bet.status}`} key={bet.id}>
-                <span className="player-cell">{bet.maskedName}</span>
-                <span>{bet.amount.toFixed(2)}</span>
+                <span className="player-cell">
+                  <span className="player-avatar-sm" style={{ background: bet.avatarColor, width: '24px', height: '24px' }} />
+                  {bet.maskedName}
+                </span>
+                <span>{bet.amount.toFixed(2)} USD</span>
                 <span className="multiplier-cell">{bet.multiplier ? `${bet.multiplier}x` : '\u2014'}</span>
-                <span className="win-cell">{bet.winAmount}</span>
+                <span className="win-cell">{bet.multiplier ? `${bet.winAmount} USD` : '\u2014'}</span>
               </div>
             ))}
           </div>

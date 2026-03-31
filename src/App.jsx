@@ -11,6 +11,7 @@ import { CashoutOverlay } from './components/CashoutOverlay.jsx';
 import { SettingsMenu } from './components/SettingsMenu.jsx';
 import { ProvablyFairModal } from './components/ProvablyFairModal.jsx';
 import { SponsorBanner } from './components/SponsorBanner.jsx';
+import { WelcomeModal } from './components/WelcomeModal.jsx';
 import { useState, useEffect } from 'react';
 import { GameState } from './engine/GameStates.js';
 import { generateClientSeed, generateServerSeedHash } from './game/ProvablyFair.js';
@@ -22,6 +23,9 @@ function App() {
   const [playerCount, setPlayerCount] = useState(() => 300 + Math.floor(Math.random() * 500));
   const [showMenu, setShowMenu] = useState(false);
   const [showFair, setShowFair] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    return !sessionStorage.getItem('aviator_age_confirmed');
+  });
   const [clientSeed] = useState(() => generateClientSeed());
   const [serverSeedHash] = useState(() => generateServerSeedHash());
 
@@ -39,6 +43,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      {showWelcome && <WelcomeModal onAccept={() => setShowWelcome(false)} />}
       <div className="game-layout">
         <aside className="left-sidebar">
           <BetTable key={gameState.roundNumber} />

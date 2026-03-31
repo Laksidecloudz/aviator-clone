@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { GameState } from '../engine/GameStates.js';
 import { formatMultiplier } from '../game/CrashAlgorithm.js';
 
-const QUICK_AMOUNTS = [1, 5, 10, 25, 50];
+const QUICK_AMOUNTS = [1, 2, 5, 10];
 
 export function BetPanel({ slot, gameState, placeBet, cashout, playClick }) {
   const [betAmount, setBetAmount] = useState(10);
@@ -134,7 +134,7 @@ export function BetPanel({ slot, gameState, placeBet, cashout, playClick }) {
                 onClick={() => handleQuickAmount(amt)}
                 disabled={!canBet && currentState !== GameState.LOBBY}
               >
-                ${amt}
+                {amt}
               </button>
             ))}
           </div>
@@ -142,12 +142,13 @@ export function BetPanel({ slot, gameState, placeBet, cashout, playClick }) {
 
         {canCashout ? (
           <button className="bet-action-btn cashout" onClick={handleCashout}>
-            CASHOUT
-            {cashoutValue && <span className="cashout-value">${(activeBet * multiplier).toFixed(2)}</span>}
+            CASH OUT
+            {cashoutValue && <span className="cashout-value">${(activeBet * multiplier).toFixed(2)} USD</span>}
           </button>
         ) : isWaiting ? (
-          <button className="bet-action-btn waiting" disabled>
-            CASHED OUT
+          <button className="bet-action-btn cancel" style={{ backgroundColor: '#D32F2F' }} disabled>
+            CANCEL
+            <span className="cancel-subtext">WAITING FOR NEXT ROUND</span>
           </button>
         ) : (
           <button
@@ -155,7 +156,7 @@ export function BetPanel({ slot, gameState, placeBet, cashout, playClick }) {
             onClick={handleBet}
             disabled={!canBet || betAmount <= 0 || betAmount > balance}
           >
-            BET ${betAmount}
+            BET ${betAmount.toFixed(2)} USD
           </button>
         )}
       </div>

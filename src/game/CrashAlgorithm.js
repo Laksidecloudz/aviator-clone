@@ -36,9 +36,8 @@ export function generateCrashPointFromHash(hashValue) {
 }
 
 function computeRateConstant(crashMultiplier) {
-  if (crashMultiplier <= 1.00) return 10;
-  const lnCrash = Math.log(crashMultiplier);
-  return lnCrash / 12;
+  if (crashMultiplier <= 1.00) return 1;
+  return Math.log(crashMultiplier) / 8;
 }
 
 export function getMultiplierAtTime(flightTimeMs, crashMultiplier) {
@@ -46,17 +45,19 @@ export function getMultiplierAtTime(flightTimeMs, crashMultiplier) {
 
   const t = flightTimeMs / 1000;
   const k = computeRateConstant(crashMultiplier);
-  const multiplier = 1 + (crashMultiplier - 1) * (1 - Math.exp(-k * t));
-
-  return Math.min(multiplier, crashMultiplier);
+  // Accelerating formula - starts slow, speeds up (opposite of before)
+  const normFactor = Math.exp(k * 8) - 1;
+  return 1 + (crashMultiplier - 1) * (Math.exp(k * t) - 1) / normFactor;
 }
 
 export function getMultiplierRate(multiplier, crashMultiplier) {
   if (crashMultiplier <= 1.00) return 0;
-  const remaining = crashMultiplier - multiplier;
-  if (remaining <= 0) return 0;
+  if (multiplier >= crashMultiplier) return 0;
   const k = computeRateConstant(crashMultiplier);
-  return k * remaining;
+  // Derivative of accelerating formula
+  const normFactor = Math.exp(k * 8) - 1;
+  const rate = (crashMultiplier - 1) * k * Math.exp(k * (multiplier - 1)) / normFactor;
+  return rate;
 }
 
 export function formatMultiplier(value) {

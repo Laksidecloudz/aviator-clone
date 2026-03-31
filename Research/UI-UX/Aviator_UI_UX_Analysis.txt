@@ -1,0 +1,722 @@
+AVIATOR GAME
+
+UI/UX Analysis Document
+
+Source: Spribe Official Aviator Demo
+
+Analysis Date: March 30, 2026
+
+1. CURVE / FLIGHT PATH ANIMATION
+
+Shape & Mathematical Behavior
+
+The curve follows an EXPONENTIAL growth pattern, not linear. The
+multiplier starts at 1.00x and accelerates rapidly as time progresses.
+The curve appears to follow a formula similar to: multiplier = e^(kt)
+where k is a growth constant.
+
+OBSERVED BEHAVIOR: The curve starts relatively flat (gentle slope) at
+1x-2x, then becomes progressively steeper. By 5x, the curve is climbing
+at approximately 45 degrees; by 10x+, it approaches near-vertical
+ascent.
+
+Slope Progression at Key Milestones
+
+  • 1x-1.99x: Very gentle slope, approximately 10-15 degrees
+
+  • 2x-4.99x: Moderate slope, approximately 25-35 degrees
+
+  • 5x-9.99x: Steep slope, approximately 45-60 degrees
+
+  • 10x+: Very steep, approaching 70-80 degrees
+
+  • 50x+: Near-vertical, almost 85+ degrees
+
+Derivative Behavior Near Crash
+
+CRITICAL OBSERVATION: The curve does NOT flatten before crash. The plane
+maintains its exponential acceleration trajectory until the exact moment
+of crash. There is no plateau or deceleration warning - the crash
+happens instantaneously while the curve is still steeply ascending.
+
+This creates the tension mechanic: players see the curve getting steeper
+and steeper, knowing it could crash at any moment while the potential
+reward increases exponentially.
+
+Curve Visual Style
+
+  • Line Width: Approximately 3-4 pixels thick
+
+  • Color: Bright lime green (#86E96D) with glow effect
+
+  • Glow: Soft outer glow in same green color, approximately 8-10px
+  radius
+
+  • Fill: Gradient fill under the curve from green to transparent
+
+  • Anti-aliasing: Smooth, high-quality curve rendering
+
+Time to Reach Milestones (Typical Mid-Range Crash)
+
+  • 1x to 2x: Approximately 2-3 seconds
+
+  • 2x to 5x: Approximately 3-4 seconds
+
+  • 5x to 10x: Approximately 4-6 seconds
+
+  • Total to 10x: Approximately 10-12 seconds from start
+
+Note: These timings vary based on the provably fair crash point
+generation. The video shows a 2.58x crash and an 11.18x crash.
+
+2. PLANE SPRITE & ANIMATION
+
+Plane Design Details
+
+The plane is a stylized RED biplane/monoplane hybrid with the following
+characteristics:
+
+  • Fuselage: Sleek, streamlined red body with subtle gradient shading
+
+  • Wings: Single main wing (monoplane style) with white/light gray tips
+
+  • Tail: Classic vertical stabilizer with horizontal elevators
+
+  • Propeller: Visible at front, animated with motion blur effect
+
+  • Cockpit: Small, implied cockpit area
+
+  • Markings: No visible text or numbers on the plane itself
+
+Color Specification
+
+  • Primary Red: Bright, saturated red (#E53935 or similar)
+
+  • Wing Tips: White or very light gray
+
+  • Propeller: Silver/gray with motion blur
+
+  • Shading: Subtle darker red gradient on underside
+
+Bob/Floating Animation
+
+The plane exhibits a subtle vertical bobbing motion independent of the
+curve movement:
+
+  • Amplitude: Approximately 5-10 pixels up/down
+
+  • Frequency: Approximately 2-3 complete cycles per second
+
+  • Pattern: Sine wave oscillation, smooth and natural
+
+  • Purpose: Adds life and dynamism to the sprite
+
+Propeller Animation
+
+  • Animation: Continuous rotation
+
+  • Speed: Fast rotation, approximately 10-15 RPM visually
+
+  • Visual: Motion blur circle effect, not distinct blades
+
+  • Color: Silver/gray blur circle
+
+Angle/Tilt Behavior
+
+The plane rotates to follow the curve tangent:
+
+  • At 1x: Nearly horizontal, slight upward angle (~10 degrees)
+
+  • At 2x: Moderate climb angle (~25 degrees)
+
+  • At 5x: Steep angle (~45 degrees)
+
+  • At 10x+: Very steep angle (~60-70 degrees)
+
+The rotation is smooth and follows the instantaneous slope of the curve,
+creating the illusion that the plane is 'flying' along the path.
+
+Position on Screen
+
+  • Horizontal: Plane stays at approximately 60-70% from left edge
+
+  • Vertical: Plane moves upward as multiplier increases
+
+  • Camera: Follows the plane, panning up and right as curve ascends
+
+  • Trail: Particle trail follows behind the plane
+
+3. FLY-AWAY / CRASH ANIMATION
+
+Crash Behavior
+
+At the moment of crash, the following sequence occurs:
+
+  • 1. Plane INSTANTLY disappears - no fade, no explosion
+
+  • 2. The curve stops drawing immediately
+
+  • 3. 'FLEW AWAY!' text appears above the final multiplier
+
+  • 4. Final multiplier turns RED and remains displayed
+
+  • 5. Background color shifts to darker purple/magenta
+
+'FLEW AWAY!' Text Animation
+
+  • Position: Center of game area, above the multiplier
+
+  • Size: Large, approximately 48-64px font
+
+  • Color: White text (#FFFFFF)
+
+  • Font: Bold, sans-serif (likely system font)
+
+  • Animation: Fade-in from 0% to 100% opacity
+
+  • Duration: Text remains visible for approximately 3-5 seconds
+
+  • Style: All caps, with exclamation mark
+
+Final Multiplier Display
+
+  • Position: Center, below 'FLEW AWAY!' text
+
+  • Color Change: Transitions from white to BRIGHT RED
+
+  • Size: Very large, dominant display (approximately 80-100px)
+
+  • Decimals: Always shows 2 decimal places (e.g., '2.58x')
+
+  • Duration: Remains visible until next round starts
+
+Screen Effects
+
+  • Flash: NO bright flash at crash
+
+  • Shake: NO screen shake
+
+  • Color Overlay: Background shifts to darker purple/magenta tone
+
+  • Transition: Smooth fade to lobby state
+
+Particle Effects
+
+NO visible particle burst at crash point. The crash is a clean
+disappearance. However, during flight:
+
+  • Trail particles: Small white/yellow dots trailing behind plane
+
+  • Particle behavior: Fade out over time, create motion streak
+
+  • Density: Moderate, approximately 20-30 visible particles
+
+4. MULTIPLIER DISPLAY
+
+Position & Layout
+
+  • Position: Center of game canvas
+
+  • Anchor: Stays centered horizontally, moves up as curve climbs
+
+  • Z-Index: Above curve, below plane
+
+Size & Scale
+
+  • Font Size: Approximately 15-20% of canvas height
+
+  • At 1x: Large, readable size
+
+  • At 10x+: Same size, no scaling with multiplier value
+
+Color Behavior (State-Based)
+
+  • 1.00x - 1.99x: White (#FFFFFF)
+
+  • 2.00x - 9.99x: White (#FFFFFF) - no color change
+
+  • 10.00x+: Purple/Magenta tint on background, text remains white
+
+  • At Crash: Turns BRIGHT RED (#FF0000 or #E53935)
+
+Font Specifications
+
+  • Typeface: Sans-serif, bold weight
+
+  • Style: Monospace-like numeric display
+
+  • Weight: Bold (700)
+
+  • Rendering: Anti-aliased, crisp edges
+
+Animation Effects
+
+  • Number Update: Smooth increment, no jitter
+
+  • Decimal Animation: Hundredths place changes rapidly
+
+  • Pulse: Subtle pulse/glow effect at higher multipliers
+
+  • Scale: No scale animation, fixed size
+
+Decimal Places
+
+  • Format: Always 2 decimal places
+
+  • Display: '1.00x', '2.58x', '11.18x'
+
+  • Suffix: Lowercase 'x' immediately after numbers
+
+  • Separator: Period (.) for decimal
+
+5. BACKGROUND
+
+Visual Style
+
+The background features a dramatic SUNBURST/RADIAL RAY pattern emanating
+from the bottom-left corner:
+
+  • Pattern: Radiating rays like sunbeams or spotlight effect
+
+  • Origin: Bottom-left corner of canvas
+
+  • Direction: Rays extend toward top-right
+
+  • Count: Approximately 12-16 distinct rays
+
+Color Scheme
+
+  • Base Color: Very dark blue/black (#0A0E17 or similar)
+
+  • Ray Color: Gradient from dark blue to lighter blue/purple
+
+  • Ray Brightness: Subtle, not overpowering
+
+  • Edge Softness: Rays have soft, blurred edges
+
+Dynamic Background Changes
+
+The background changes based on game state:
+
+  • Lobby/Waiting: Dark with subtle rays
+
+  • Flight (1x-2x): Blue-tinted rays
+
+  • Flight (2x-5x): Blue-purple gradient rays
+
+  • Flight (5x+): Purple/magenta tinted rays
+
+  • Crash: Dark purple/magenta dominant
+
+Animation
+
+  • Ray Movement: Subtle rotation/pulse (very slow)
+
+  • Color Transition: Smooth gradient shifts during flight
+
+  • Intensity: Rays become more visible as multiplier increases
+
+Grid Lines
+
+  • Presence: NO visible grid lines in the observed version
+
+  • Alternative: The curve itself provides the only visual reference
+
+Note: Some Aviator variants may have subtle grid lines, but the official
+Spribe version observed uses the sunburst pattern exclusively.
+
+6. BET PANEL UI
+
+Layout & Position
+
+  • Position: Bottom of screen, fixed overlay
+
+  • Structure: Two identical bet panels side-by-side
+
+  • Width: Each panel approximately 45% of screen width
+
+  • Height: Approximately 25-30% of screen height
+
+  • Background: Dark semi-transparent overlay
+
+Bet Amount Input
+
+  • Display: Large numeric field showing current bet amount
+
+  • Format: '1.00' with currency suffix
+
+  • Stepper Buttons: '-' and '+' on either side
+
+  • Quick Amount Buttons: 1, 2, 5, 10 (below input)
+
+Tab Navigation
+
+  • Tabs: 'Bet' and 'Auto'
+
+  • Active Tab: Highlighted with underline
+
+  • Switching: Tap to toggle between manual and auto modes
+
+BET Button (Green)
+
+  • Color: Bright lime green (#29A309)
+
+  • Text: 'Bet' + amount (e.g., 'Bet 1.00 USD')
+
+  • Shape: Rounded rectangle, full width of panel
+
+  • Height: Approximately 60-70px
+
+  • Font: White, bold, centered
+
+  • Hover: Slight brightness increase
+
+  • Press: Scale down slightly (0.95x)
+
+CANCEL Button (Red)
+
+  • Color: Bright red (#D32F2F)
+
+  • Text: 'Cancel' + 'Waiting for next round'
+
+  • Shape: Same as BET button
+
+  • Purpose: Appears after bet is placed, allows cancellation
+
+CASH OUT Button (Orange)
+
+  • Color: Orange/amber (#FF9800)
+
+  • Text: 'Cash Out' + current win amount
+
+  • Shape: Same as other buttons
+
+  • Dynamic: Amount updates in real-time with multiplier
+
+  • Purpose: Appears during flight to cash out active bet
+
+Auto-Bet Controls
+
+  • Checkbox: 'Auto' toggle
+
+  • Auto Cash Out: Input field for target multiplier
+
+  • Visual: Slider or direct input
+
+Balance Display
+
+  • Position: Top-right corner of screen
+
+  • Format: '30,000.88 USD'
+
+  • Color: Green (#29A309) for positive balance
+
+  • Updates: Real-time after wins/losses
+
+7. SOCIAL / LEADERBOARD ELEMENTS
+
+Left Sidebar Layout
+
+A comprehensive betting information panel on the left side:
+
+  • Width: Approximately 25-30% of screen width
+
+  • Background: Dark semi-transparent
+
+  • Border: Subtle separator from main game area
+
+Tab Navigation
+
+  • Tabs: 'All Bets', 'Previous', 'Top'
+
+  • All Bets: Shows current round's active bets
+
+  • Previous: Shows previous round results
+
+  • Top: Shows highest wins/leaderboard
+
+Player Information Display
+
+  • Avatar: Colored circular avatar with initial/icon
+
+  • Username: Masked format (e.g., 'd***7', 'g***8')
+
+  • Bet Amount: Shows bet in USD
+
+  • Multiplier: Shows cash-out multiplier (if cashed out)
+
+  • Win Amount: Shows winnings in green if won
+
+Player Count
+
+  • Display: '423/569 Bets' format
+
+  • Position: Top of sidebar
+
+  • Icon: Small person/group icon
+
+  • Updates: Real-time as players join/leave
+
+Bet History Pills
+
+  • Position: Top of main game area, horizontal scroll
+
+  • Format: Small colored pills with multiplier values
+
+  • Color Coding: Green for low (1x-2x), Yellow/Orange for medium
+  (2x-5x), Purple/Pink for high (5x+)
+
+  • Count: Shows last 15-20 rounds
+
+Top Winners (Top Tab)
+
+  • Filter Options: 'Day', 'Month', 'Year'
+
+  • Display: Avatar, username, bet amount, result multiplier
+
+  • Win Amount: Large green numbers
+
+  • Round Max: Shows maximum multiplier reached
+
+Chat Feature
+
+  • Presence: Chat panel visible on right side
+
+  • Toggle: Can be opened/closed
+
+  • Content: Player messages, system notifications
+
+  • 'Rain' Feature: Free bets dropped in chat
+
+8. GAME STATE TRANSITIONS
+
+State Machine Overview
+
+The game follows a clear finite state machine: LOBBY -> BETTING ->
+FLYING -> CRASHED -> LOBBY
+
+LOBBY State
+
+  • Visual: 'UFC Aviator OFFICIAL PARTNERS' logo displayed
+
+  • Background: Dark with subtle rays
+
+  • Multiplier: Not displayed
+
+  • Buttons: Green 'Bet' buttons active
+
+  • Duration: Variable, typically 5-10 seconds between rounds
+
+LOBBY -> BETTING Transition
+
+  • Trigger: Timer countdown or manual bet placement
+
+  • Visual Change: 'Cancel' button appears after bet
+
+  • Text: 'Waiting for next round' appears
+
+  • Animation: Smooth fade transition
+
+BETTING State
+
+  • Visual: Logo fades, plane prepares to appear
+
+  • Countdown: Brief countdown before flight
+
+  • Bet Status: 'Cancel' button shows bet is locked
+
+  • Duration: Approximately 3-5 seconds
+
+BETTING -> FLYING Transition
+
+  • Trigger: Countdown reaches zero
+
+  • Plane Appearance: Plane fades in at bottom-left
+
+  • Curve Start: Curve begins drawing from (0,0)
+
+  • Multiplier: '1.00x' appears and starts increasing
+
+  • Button Change: 'Cancel' becomes 'Cash Out' (orange)
+
+  • Animation: Smooth 0.5 second transition
+
+FLYING State
+
+  • Visual: Plane flying along curve
+
+  • Multiplier: Continuously updating
+
+  • Background: Color shifts with multiplier
+
+  • Cash Out: Button shows real-time win amount
+
+  • Duration: Variable, 2-30+ seconds depending on crash point
+
+FLYING -> CRASHED Transition
+
+  • Trigger: Crash point reached (provably fair)
+
+  • Plane: Instantly disappears
+
+  • Curve: Stops drawing immediately
+
+  • Text: 'FLEW AWAY!' fades in
+
+  • Multiplier: Turns red, stops updating
+
+  • Duration: Instant crash, 3-5 seconds display
+
+CRASHED -> LOBBY Transition
+
+  • Trigger: After crash display timeout
+
+  • Visual: Fade to UFC logo
+
+  • Reset: All bets cleared, new round setup
+
+  • Duration: Approximately 2-3 seconds
+
+  • Next Round: Setup begins immediately
+
+9. SOUND CUES
+
+Note: Sound analysis is limited as the video may not capture all audio
+clearly. The following is based on typical Aviator implementations and
+any audible cues:
+
+Flight Start Sound
+
+  • Type: Engine start/whoosh sound
+
+  • Duration: Approximately 0.5-1 second
+
+  • Character: Rising pitch, energetic
+
+Multiplier Tick Sounds
+
+  • Type: Subtle tick/click at each decimal update
+
+  • Frequency: Increases with multiplier speed
+
+  • Character: Light, rhythmic
+
+Cash Out Sound
+
+  • Type: Success chime/cash register sound
+
+  • Character: Positive, rewarding tone
+
+  • Duration: Short, approximately 0.3 seconds
+
+Crash Sound
+
+  • Type: Engine cut-off/descent sound
+
+  • Character: Sudden stop, slightly negative
+
+  • Duration: Very short, approximately 0.2 seconds
+
+Settings
+
+  • Sound Toggle: Available in settings menu
+
+  • Music Toggle: Separate background music control
+
+  • Animation Toggle: Can disable plane animation
+
+10. MICRO-INTERACTIONS
+
+Button Hover States
+
+  • Green Bet Button: Brightness increases ~10%
+
+  • Orange Cash Out: Glow effect intensifies
+
+  • Red Cancel: Subtle highlight
+
+  • Timing: Immediate response (<50ms)
+
+Button Press Animations
+
+  • Scale: Button scales to 0.95x on press
+
+  • Color: Slight darkening during press
+
+  • Release: Springs back to 1.0x
+
+  • Duration: Approximately 100ms
+
+Bet Confirmation
+
+  • Visual: Button changes from green to red
+
+  • Text: Changes from 'Bet' to 'Cancel'
+
+  • Sub-text: 'Waiting for next round' appears
+
+  • Animation: Smooth color transition (200ms)
+
+Cash Out Animation
+
+  • Button: Orange button press animation
+
+  • Win Display: Green 'You have cashed out!' banner
+
+  • Amount: Shows win amount with multiplier
+
+  • Balance: Updates with animation
+
+  • Banner Duration: Approximately 3 seconds
+
+Win Amount Display
+
+  • Position: Top banner overlay
+
+  • Color: Green background, white text
+
+  • Content: 'You have cashed out!' + multiplier + win amount
+
+  • Dismiss: Manual X button or auto-dismiss
+
+Settings Menu Interactions
+
+  • Open: Slide-in from right
+
+  • Close: Slide-out to right
+
+  • Toggles: Smooth switch animation
+
+  • Duration: 300ms transitions
+
+History Pill Interactions
+
+  • Hover: Slight scale increase
+
+  • Click: Opens detailed round info
+
+  • Scroll: Horizontal smooth scroll
+
+Premium Polish Details
+
+What makes the Spribe Aviator feel premium:
+
+  • Smooth 60fps animations throughout
+
+  • Consistent easing curves (ease-out for transitions)
+
+  • Subtle glow effects on active elements
+
+  • Color-coded feedback (green=win, red=loss, orange=action)
+
+  • Real-time updates with no visible lag
+
+  • Responsive button states
+
+  • Clean, uncluttered UI layout
+
+  • Professional typography hierarchy
+
+  • Seamless state transitions
+
+  • Visual excitement that builds with multiplier

@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 
 function getHistoryColor(value) {
-  if (value <= 1.00) return 'red';
   if (value < 2) return 'red';
-  if (value < 10) return 'yellow';
-  return 'green';
+  if (value < 5) return 'green';
+  return 'pink';  // 5x and above
 }
 
 export function GameHistory({ crashHistory }) {

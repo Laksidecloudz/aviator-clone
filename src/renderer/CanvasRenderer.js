@@ -2,7 +2,7 @@ import { GameState } from '../engine/GameStates.js';
 import { BackgroundRenderer } from './BackgroundRenderer.js';
 import { CurveRenderer } from './CurveRenderer.js';
 import { ParticlePool } from './ParticlePool.js';
-import { ScreenShake, easeInOutQuad } from './effects.js';
+import { ScreenShake } from './effects.js';
 import { FlightPath } from '../game/FlightPath.js';
 
 export class CanvasRenderer {
@@ -23,6 +23,7 @@ export class CanvasRenderer {
     this._frameCount = 0;
     this._timestamp = 0;
     this._prevState = null;
+    this._crashTimestamp = null;
   }
 
   resize(width, height) {
@@ -49,6 +50,10 @@ export class CanvasRenderer {
     }
     if (this._prevState !== state.currentState && state.currentState === GameState.BETTING) {
       this._flightPath.resetCamera();
+      this._crashTimestamp = null;
+    }
+    if (this._prevState !== state.currentState && state.currentState === GameState.CRASHED) {
+      this._crashTimestamp = timestamp;
     }
     this._prevState = state.currentState;
 
@@ -65,19 +70,19 @@ export class CanvasRenderer {
 
     switch (state.currentState) {
       case GameState.LOBBY:
-        this._background.render(ctx, w, h);
+        this._background.render(ctx, w, h, 0, GameState.LOBBY);
         this._renderLobby(ctx, w, h);
         break;
       case GameState.BETTING:
-        this._background.render(ctx, w, h);
+        this._background.render(ctx, w, h, 0, GameState.BETTING);
         this._renderBetting(ctx, w, h, state);
         break;
       case GameState.FLYING:
-        this._background.render(ctx, w, h);
+        this._background.render(ctx, w, h, state.multiplier, GameState.FLYING);
         this._renderFlying(ctx, w, h, state, dtMs);
         break;
       case GameState.CRASHED:
-        this._background.render(ctx, w, h);
+        this._background.render(ctx, w, h, state.crashMultiplier, GameState.CRASHED);
         this._renderCrashed(ctx, w, h, state, dtMs);
         break;
     }
@@ -144,19 +149,41 @@ export class CanvasRenderer {
       state.currentFlightTimeMs,
       state.crashMultiplier
     );
+
     this._curve.drawFill(ctx);
     this._curve.draw(ctx, state.crashMultiplier);
+
+    // Fly-away animation
+    if (this._crashTimestamp !== null) {
+      const flyAwayMs = performance.now() - this._crashTimestamp;
+      const flyAwayT = Math.min(flyAwayMs / 1200, 1.0);
+
+      const basePos = this._flightPath.getPlanePosition(
+        state.currentFlightTimeMs,
+        state.crashMultiplier
+      );
+
+      const flyAwayY = basePos.y - flyAwayT * 250;
+      const flyAwayX = basePos.x + flyAwayT * 30;
+      const flyAwayAngle = basePos.angle - flyAwayT * 0.6;
+      const flyAwayAlpha = 1 - flyAwayT * flyAwayT;
+
+      ctx.globalAlpha = Math.max(0, flyAwayAlpha);
+      this._drawPlane(ctx, flyAwayX, flyAwayY, flyAwayAngle);
+      ctx.globalAlpha = 1;
+
+      // Trail during fly-away
+      if (flyAwayT < 0.5) {
+        if (this._frameCount % 2 === 0) {
+          this._particles.spawnTrail(flyAwayX - 12, flyAwayY);
+        }
+      }
+    }
 
     this._particles.update(dtMs);
     this._particles.draw(ctx);
 
-    if (this._shake.isActive()) {
-      const pos = this._flightPath.getPlanePosition(
-        state.currentFlightTimeMs,
-        state.crashMultiplier
-      );
-      this._drawCrashEffect(ctx, pos.x, pos.y);
-    }
+    this._frameCount++;
   }
 
   _drawPlane(ctx, x, y, angle) {
@@ -164,46 +191,98 @@ export class CanvasRenderer {
     ctx.translate(x, y);
     ctx.rotate(angle);
 
-    const t = (Math.sin(this._timestamp / 300) + 1) / 2;
-    const bobOffset = (easeInOutQuad(t) * 2 - 1) * 3;
+    const t = this._timestamp / 1000;
+    const bobOffset = Math.sin(t * 4) * 1.2;
     ctx.translate(0, bobOffset);
+
+    const s = 0.9;
+    ctx.scale(s, s);
+
+    ctx.fillStyle = '#ff1744';
+
+    ctx.beginPath();
+    ctx.moveTo(24, 0);
+    ctx.quadraticCurveTo(20, -6, 8, -5);
+    ctx.lineTo(-4, -4);
+    ctx.quadraticCurveTo(-12, -3, -16, -1);
+    ctx.lineTo(-20, 0);
+    ctx.lineTo(-16, 1);
+    ctx.quadraticCurveTo(-12, 3, -4, 4);
+    ctx.lineTo(8, 5);
+    ctx.quadraticCurveTo(20, 6, 24, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#cc0033';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(6, -2.5);
+    ctx.lineTo(10, 2.5);
+    ctx.moveTo(10, -2.5);
+    ctx.lineTo(6, 2.5);
+    ctx.stroke();
+
+    ctx.fillStyle = 'rgba(255, 120, 150, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(12, -1.5, 5, 2.5, 0, Math.PI, 0);
+    ctx.fill();
 
     ctx.fillStyle = '#ff1744';
     ctx.beginPath();
-    ctx.moveTo(20, 0);
-    ctx.lineTo(-10, -5);
-    ctx.lineTo(-6, 0);
-    ctx.lineTo(-10, 5);
+    ctx.moveTo(8, -5);
+    ctx.lineTo(6, -16);
+    ctx.lineTo(-2, -16);
+    ctx.lineTo(-4, -5);
     ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(8, 0);
-    ctx.lineTo(0, -14);
-    ctx.lineTo(-4, 0);
+    ctx.moveTo(8, 5);
+    ctx.lineTo(6, 16);
+    ctx.lineTo(-2, 16);
+    ctx.lineTo(-4, 5);
     ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(8, 0);
-    ctx.lineTo(0, 14);
-    ctx.lineTo(-4, 0);
+    ctx.moveTo(-14, -1);
+    ctx.lineTo(-18, -10);
+    ctx.lineTo(-20, -1);
     ctx.closePath();
     ctx.fill();
 
     ctx.beginPath();
-    ctx.moveTo(-8, -3);
-    ctx.lineTo(-14, -10);
-    ctx.lineTo(-10, -3);
+    ctx.moveTo(-14, -0.5);
+    ctx.lineTo(-20, -4);
+    ctx.lineTo(-22, -0.5);
+    ctx.lineTo(-20, 3);
     ctx.closePath();
     ctx.fill();
 
-    ctx.shadowColor = 'rgba(255, 23, 68, 0.6)';
-    ctx.shadowBlur = 20;
-    ctx.fillStyle = 'rgba(255, 23, 68, 0.15)';
+    const propAngle = t * 28;
+    ctx.save();
+    ctx.translate(24, 0);
+    ctx.rotate(propAngle);
+    ctx.fillStyle = '#cc0033';
     ctx.beginPath();
-    ctx.arc(0, 0, 16, 0, 6.2832);
+    ctx.ellipse(0, -9, 1.5, 9, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(0, 9, 1.5, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ff1744';
+    ctx.beginPath();
+    ctx.arc(0, 0, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.shadowColor = 'rgba(255, 23, 68, 0.35)';
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = 'rgba(255, 23, 68, 0.06)';
+    ctx.beginPath();
+    ctx.arc(0, 0, 22, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.restore();
   }
 

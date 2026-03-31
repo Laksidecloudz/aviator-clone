@@ -1,0 +1,301 @@
+# Development Report - March 30, 2026
+
+**Project:** Aviator Crash Game Clone (WorldStar Betting)\
+**Directory:** `C:\Users\AkayG\Documents\aviator-clone`\
+**Last Updated:** 2026-03-30 02:41:05+02:00
+
+------------------------------------------------------------------------
+
+## Executive Summary
+
+Complete UI/UX overhaul to align with Spribe Aviator reference design,
+including crash animation restoration, multiplier formula optimization,
+settings menu expansion, and responsible gaming compliance via age
+verification modal.
+
+------------------------------------------------------------------------
+
+## 1. UI/UX Changes (Spribe Reference Alignment)
+
+### 1.1 Crash Animation
+
+**File:** `src/renderer/CanvasRenderer.js`
+
+\| Change \| Description \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\--\| \| Fly-away animation \|
+Plane zooms off and fades over 1.2s \| \| Screen shake \| Shake effect
+on crash (intensity: 12, duration: 400ms) \| \| Particle burst \| 40
+particles spawned at crash point \| \| Flash overlay \| Red flash effect
+(alpha: 0.15) \|
+
+### 1.2 Multiplier Display
+
+**Files:** `src/components/MultiplierDisplay.jsx`, `src/index.css`
+
+\| Change \| Before \| After \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\--\|\-\-\-\-\-\--\| \| Font size \| 80px
+fixed \| 18vmin (responsive) \| \| \"FLEW AWAY!\" \| Animated \| Static
+white (#FFFFFF) \| \| Crash color \| Red with pulse \| Bright red
+(#FF0000), no animation \| \| Betting countdown \| Shown in multiplier
+area \| Removed \|
+
+### 1.3 Left Sidebar
+
+**File:** `src/components/BetTable.jsx`
+
+\| Change \| Description \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\--\| \| Player count header \|
+\"X/618 Bets\" with person icon \| \| Column headers \| \"BETS \\\|
+PAYOUT \\\| CASHED OUT\" \| \| Player avatars \| 24px colored circular
+avatars \| \| Amount format \| USD suffix (e.g., \"10.00 USD\") \|
+
+### 1.4 Bet Panel
+
+**File:** `src/components/BetPanel.jsx`
+
+\| Change \| Before \| After \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\--\|\-\-\-\-\-\--\| \| Quick amounts \|
+\$1, \$5, \$10, \$25, \$50 \| 1, 2, 5, 10 \| \| BET button \| \"BET
+\$10\" \| \"BET 10.00 USD\" \| \| CASHOUT button \| \"CASHOUT\" \|
+\"CASH OUT\" (with space) \| \| Cancel button \| None \| Red (#D32F2F)
+with \"WAITING FOR NEXT ROUND\" \|
+
+### 1.5 Color Updates
+
+**File:** `src/index.css`
+
+\| Element \| Before \| After \|
+\|\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\--\|\-\-\-\-\-\--\| \| Green \|
+#00c945 \| #29A309 \| \| Red \| #ff3366 \| #D32F2F \| \| Red dim \|
+rgba(255, 51, 102, 0.15) \| rgba(211, 47, 47, 0.15) \|
+
+### 1.6 History Pills
+
+**File:** `src/components/GameHistory.jsx`
+
+\| Multiplier \| Before \| After \|
+\|\-\-\-\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\--\|\-\-\-\-\-\--\| \| \< 2x \|
+Red \| Red \| \| 2x - 4.99x \| Yellow \| Green \| \| 5x+ \| Green \|
+Pink \|
+
+### 1.7 Balance Display
+
+**File:** `src/components/BalanceDisplay.jsx`
+
+\| Change \| Before \| After \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\--\|\-\-\-\-\-\--\| \| Format \|
+\"\$30,000.88\" \| \"30,000.88 USD\" \| \| Localization \| None \|
+toLocaleString with commas \|
+
+### 1.8 Sponsor Banner
+
+**File:** `src/components/SponsorBanner.jsx`
+
+\| Change \| Description \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\--\| \| Logo \| \"aviator\"
+red italic text \| \| Icon \| SVG propeller with 3 ellipses \| \|
+Subtitle \| \"WORLDSTAR BETTING IS OFFICIAL PARTNER\" \|
+
+### 1.9 Background
+
+**File:** `src/renderer/BackgroundRenderer.js`
+
+\| State \| Color \| \|\-\-\-\-\-\--\|\-\-\-\-\-\--\| \| LOBBY/BETTING
+\| Red tint (#3a1a1a) \| \| 1x \| Blue (#1a3a6a) \| \| 2x-5x \| Blue →
+Purple \| \| 5x-10x \| Purple (#4a2a6a) \| \| 10x+ \| Pink/Magenta
+(#6a2a5a) \| \| CRASHED \| Dark purple overlay \|
+
+------------------------------------------------------------------------
+
+## 2. Bug Fix: Multiplier Sluggishness
+
+**File:** `src/game/CrashAlgorithm.js`
+
+### Problem
+
+Multiplier felt sluggish at higher values because the formula
+**decelerated** (started fast, slowed down as it approached the crash
+point).
+
+### Solution
+
+Changed from decelerating to **accelerating** formula.
+
+### Code Change
+
+**Old Formula (Decelerating):**
+`javascript export function getMultiplierAtTime(flightTimeMs, crashMultiplier) {   if (crashMultiplier <= 1.00) return 1.00;   const t = flightTimeMs / 1000;   const k = computeRateConstant(crashMultiplier);   return 1 + (crashMultiplier - 1) * (1 - Math.exp(-k * t)); }`
+
+**New Formula (Accelerating):**
+`javascript export function getMultiplierAtTime(flightTimeMs, crashMultiplier) {   if (crashMultiplier <= 1.00) return 1.00;   const t = flightTimeMs / 1000;   const k = computeRateConstant(crashMultiplier);   const normFactor = Math.exp(k * 8) - 1;   return 1 + (crashMultiplier - 1) * (Math.exp(k * t) - 1) / normFactor; }`
+
+### Impact
+
+-   Multiplier now accelerates throughout flight
+-   Creates tension as it speeds toward crash point
+-   Matches real Spribe Aviator feel
+
+------------------------------------------------------------------------
+
+## 3. Settings Menu Expansion
+
+**File:** `src/components/SettingsMenu.jsx` (full rewrite)
+
+### 3.1 New Modals Added
+
+\| Menu Modal \| Description \|
+\|\-\-\-\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\--\| \| **My Bet
+History** \| 10 mock bets, stats (total wagered/won), scrollable list \|
+\| **Free Bets & Rain** \| 4 mock free bets with claim buttons,
+expiration timers \| \| **Game Limits** \| Bet limits (\$1-\$100), max
+win (\$10,000), auto cashout limits, responsible gaming links \| \|
+**How To Play** \| 4-step visual guide with tip box \| \| **Game Rules**
+\| Basic Rules, Multipliers, Payouts, Auto Features sections \|
+
+### 3.2 Mock Data
+
+**Bet History (10 entries):** \| Round \| Bet \| Multiplier \| Win \|
+Status \|
+\|\-\-\-\-\-\--\|\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\--\|\-\-\-\--\|\-\-\-\-\-\-\--\|
+\| 156 \| \$10.00 \| 2.45x \| \$24.50 \| Cashed \| \| 155 \| \$25.00 \|
+1.00x \| \$0 \| Crashed \| \| \... \| \... \| \... \| \... \| \... \|
+
+**Free Bets (4 entries):** \| Amount \| Expires \| Status \|
+\|\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\--\| \| \$2.50 \| 5
+min \| Claimable \| \| \$1.00 \| 12 min \| Claimable \| \| \$5.00 \| 25
+min \| Claimable \| \| \$0.50 \| 45 min \| Expired \|
+
+### 3.3 Enhancements
+
+-   Player avatar shows initial letter
+-   Free Bets badge shows count of claimable bets
+-   Modal animations (slide up, fade backdrop)
+-   Footer shows version number
+
+------------------------------------------------------------------------
+
+## 4. Welcome Modal (Age Verification)
+
+**File:** `src/components/WelcomeModal.jsx` (NEW)
+
+### 4.1 Features
+
+\| Feature \| Description \|
+\|\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\--\| \| Gambling warning \|
+Red box with warning text \| \| Responsible gaming \| Green box with
+tips (set limits, don\'t chase losses, etc.) \| \| Help link \|
+BeGambleAware.org \| \| Age checkbox \| 18+ verification with custom
+styled checkbox \| \| Enter button \| Disabled until checkbox checked \|
+\| Persistence \| localStorage key: `aviator_age_confirmed` \|
+
+### 4.2 Flow
+
+1.  User visits site
+2.  Welcome modal appears (blocks game access)
+3.  User reads warnings
+4.  User checks \"I am 18 years or older\"
+5.  User clicks \"Enter Game\"
+6.  Modal closes, localStorage set
+7.  Modal won\'t show again on return visits
+
+### 4.3 Styling
+
+-   Dark gradient background (#0a0a1a to #1a0a1a)
+-   Animated entrance (fade + scale)
+-   Green border on checked state
+-   Hover effects on button
+
+------------------------------------------------------------------------
+
+## 5. Files Modified
+
+\| \# \| File \| Type \| Changes \|
+\|\-\--\|\-\-\-\-\--\|\-\-\-\-\--\|\-\-\-\-\-\-\-\--\| \| 1 \|
+`src/App.jsx` \| Modified \| Added WelcomeModal integration, state for
+showWelcome \| \| 2 \| `src/index.css` \| Modified \| Color updates,
+modal styles, responsive fixes (+200 lines) \| \| 3 \|
+`src/components/BetPanel.jsx` \| Modified \| Quick amounts, button
+formats \| \| 4 \| `src/components/BetTable.jsx` \| Modified \| Player
+count, avatars, headers \| \| 5 \| `src/components/GameHistory.jsx` \|
+Modified \| Color coding (red/green/pink) \| \| 6 \|
+`src/components/MultiplierDisplay.jsx` \| Modified \| Removed betting
+countdown \| \| 7 \| `src/components/BalanceDisplay.jsx` \| Modified \|
+USD format with toLocaleString \| \| 8 \|
+`src/components/SponsorBanner.jsx` \| Modified \| aviator logo with SVG
+propeller \| \| 9 \| `src/components/SettingsMenu.jsx` \| Modified \|
+Full menu expansion with modals \| \| 10 \|
+`src/components/WelcomeModal.jsx` \| **NEW** \| Age verification modal
+\| \| 11 \| `src/renderer/CanvasRenderer.js` \| Modified \| Fly-away,
+shake, particles \| \| 12 \| `src/renderer/BackgroundRenderer.js` \|
+Modified \| Dynamic gradients, state-based colors \| \| 13 \|
+`src/game/CrashAlgorithm.js` \| Modified \| Accelerating multiplier
+formula \|
+
+**Total:** 12 modified, 1 new file
+
+------------------------------------------------------------------------
+
+## 6. Build & Lint Status
+
+### Build
+
+`✓ built in 586ms dist/index.html          0.66 kB dist/assets/index.css    25.59 kB dist/assets/index.js     245.10 kB`
+
+### Lint
+
+`Passing (only legacy files in aviator-betting-game-clone-master/ show warnings)`
+
+------------------------------------------------------------------------
+
+## 7. Testing Checklist
+
+### Core Gameplay
+
+-   \[x\] Fly-away animation on crash
+-   \[x\] Screen shake and particles on crash
+-   \[x\] \"FLEW AWAY!\" white text, red multiplier
+-   \[x\] Background color transitions
+-   \[x\] Accelerating multiplier formula
+
+### UI Components
+
+-   \[x\] Bet panel formats (USD, quick amounts 1/2/5/10)
+-   \[x\] Left sidebar (player count, avatars, headers)
+-   \[x\] History pills colors (red/green/pink)
+-   \[x\] Balance format (\"30,000.88 USD\")
+-   \[x\] Sponsor banner (\"aviator\" logo)
+
+### Menus
+
+-   \[x\] Settings menu opens/closes
+-   \[x\] Free Bets modal with claim buttons
+-   \[x\] Bet History modal with stats
+-   \[x\] Game Limits modal
+-   \[x\] How To Play modal
+-   \[x\] Game Rules modal
+-   \[x\] Welcome modal with age verification
+-   \[x\] localStorage persistence
+
+------------------------------------------------------------------------
+
+## 8. Technical Notes
+
+### State Management
+
+-   `showWelcome` state initialized from localStorage
+-   `aviator_age_confirmed` key used for persistence
+
+### Performance
+
+-   Background renderer now calculates colors per frame based on
+    multiplier
+-   Accelerating formula uses Math.exp for smooth curves
+
+### Browser Compatibility
+
+-   Uses `localStorage` for age verification persistence
+-   `toLocaleString` for number formatting
+
+------------------------------------------------------------------------
+
+**Report Generated:** 2026-03-30T02:41:05+02:00

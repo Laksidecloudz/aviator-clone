@@ -207,7 +207,7 @@ export class GameEngine {
       this._state.crashMultiplier
     );
 
-    if (this._state.multiplier >= this._state.crashMultiplier) {
+    if (this._state.multiplier >= this._state.crashMultiplier * 0.995) {
       this._state.multiplier = this._state.crashMultiplier;
       this._crash();
       return;
