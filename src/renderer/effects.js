@@ -1,12 +1,12 @@
-export function easeOutExpo(t) {
+function easeOutExpo(t) {
   return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 }
 
-export function easeOutCubic(t) {
+function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
 
-export function easeInOutQuad(t) {
+function easeInOutQuad(t) {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
@@ -14,7 +14,7 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
-export function clamp(v, min, max) {
+function clamp(v, min, max) {
   return v < min ? min : v > max ? max : v;
 }
 

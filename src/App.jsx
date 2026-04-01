@@ -12,7 +12,9 @@ import { SettingsMenu } from './components/SettingsMenu.jsx';
 import { ProvablyFairModal } from './components/ProvablyFairModal.jsx';
 import { SponsorBanner } from './components/SponsorBanner.jsx';
 import { WelcomeModal } from './components/WelcomeModal.jsx';
-import { useState, useEffect } from 'react';
+import { RainPromo } from './components/RainPromo.jsx';
+import { ChatPanel } from './components/ChatPanel.jsx';
+import { useState, useEffect, useCallback } from 'react';
 import { GameState } from './engine/GameStates.js';
 import { generateClientSeed, generateServerSeedHash } from './game/ProvablyFair.js';
 
@@ -23,13 +25,32 @@ function App() {
   const [playerCount, setPlayerCount] = useState(() => 300 + Math.floor(Math.random() * 500));
   const [showMenu, setShowMenu] = useState(false);
   const [showFair, setShowFair] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [showWelcome, setShowWelcome] = useState(() => {
     return !sessionStorage.getItem('aviator_age_confirmed');
   });
+  const [showRealityCheck, setShowRealityCheck] = useState(false);
+  const [sessionStartTime, setSessionStartTime] = useState(Date.now());
+  const [sessionStats, setSessionStats] = useState({ bets: 0, wagered: 0, profit: 0 });
   const [clientSeed] = useState(() => generateClientSeed());
   const [serverSeedHash] = useState(() => generateServerSeedHash());
 
   const isLobby = gameState.currentState === GameState.LOBBY;
+
+  const formatSessionTime = useCallback(() => {
+    const elapsed = Math.floor((Date.now() - sessionStartTime) / 1000);
+    const hours = Math.floor(elapsed / 3600);
+    const minutes = Math.floor((elapsed % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  }, [sessionStartTime]);
+
+  const dismissRealityCheck = useCallback(() => {
+    setShowRealityCheck(false);
+    setSessionStartTime(Date.now());
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -40,6 +61,16 @@ function App() {
     }, 5000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - sessionStartTime;
+      if (elapsed >= 30 * 60 * 1000 && !showRealityCheck && !showWelcome) {
+        setShowRealityCheck(true);
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [sessionStartTime, showRealityCheck, showWelcome]);
 
   return (
     <div className="app-shell">
@@ -65,7 +96,11 @@ function App() {
               <button className="menu-btn" onClick={() => setShowMenu(true)}>
                 {'\u2630'}
               </button>
+              <button className="chat-toggle-btn" onClick={() => setShowChat(true)}>
+                💬
+              </button>
               <SponsorBanner visible={isLobby} />
+              {isLobby && <RainPromo />}
               <div className="player-count-overlay">
                 <div className="avatar-cluster">
                   <div className="avatar" style={{ background: '#8855ff' }} />
@@ -120,6 +155,49 @@ function App() {
           clientSeed={clientSeed}
           serverSeedHash={serverSeedHash}
         />
+      )}
+      <ChatPanel isOpen={showChat} onClose={() => setShowChat(false)} />
+
+      {showRealityCheck && (
+        <div className="reality-check-backdrop">
+          <div className="reality-check-modal">
+            <div className="reality-check-icon">⏰</div>
+            <div className="reality-check-title">Reality Check</div>
+            <div className="reality-check-time">{formatSessionTime()}</div>
+            <div className="reality-check-label">Session Duration</div>
+            <div className="reality-check-stats">
+              <div className="reality-stat">
+                <div className="reality-stat-label">Total Bets</div>
+                <div className="reality-stat-value">{sessionStats.bets}</div>
+              </div>
+              <div className="reality-stat">
+                <div className="reality-stat-label">Total Wagered</div>
+                <div className="reality-stat-value">${sessionStats.wagered.toFixed(2)}</div>
+              </div>
+              <div className="reality-stat">
+                <div className="reality-stat-label">Net Profit</div>
+                <div className={`reality-stat-value ${sessionStats.profit >= 0 ? 'profit' : 'loss'}`}>
+                  ${sessionStats.profit >= 0 ? '+' : ''}{sessionStats.profit.toFixed(2)}
+                </div>
+              </div>
+              <div className="reality-stat">
+                <div className="reality-stat-label">Balance</div>
+                <div className="reality-stat-value">${gameState.balance.toFixed(2)}</div>
+              </div>
+            </div>
+            <div className="reality-check-message">
+              You've been playing for {formatSessionTime()}. Take a moment to consider your gaming session. Remember to play responsibly.
+            </div>
+            <div className="reality-check-actions">
+              <button className="reality-continue-btn" onClick={dismissRealityCheck}>
+                Continue Playing
+              </button>
+              <button className="reality-break-btn" onClick={dismissRealityCheck}>
+                Take a Break
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

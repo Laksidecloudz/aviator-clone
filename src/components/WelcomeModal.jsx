@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PropellerIcon } from './PropellerIcon.jsx';
 
 const WARNING_ICON = '\u26A0\uFE0F';
 const SHIELD_ICON = '\uD83D\uDEE1\uFE0F';
@@ -18,12 +19,7 @@ export function WelcomeModal({ onAccept }) {
     <div className="welcome-backdrop">
       <div className="welcome-modal">
         <div className="welcome-logo">
-          <svg className="welcome-propeller" viewBox="0 0 64 64" width="64" height="64">
-            <ellipse cx="32" cy="32" rx="28" ry="8" fill="currentColor" opacity="0.3" transform="rotate(-30 32 32)" />
-            <ellipse cx="32" cy="32" rx="28" ry="8" fill="currentColor" opacity="0.3" transform="rotate(30 32 32)" />
-            <ellipse cx="32" cy="32" rx="28" ry="8" fill="currentColor" opacity="0.3" />
-            <circle cx="32" cy="32" r="6" fill="currentColor" />
-          </svg>
+          <PropellerIcon width={64} height={64} className="welcome-propeller" />
           <h1 className="welcome-title">aviator</h1>
         </div>
 

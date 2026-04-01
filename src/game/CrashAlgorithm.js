@@ -28,13 +28,6 @@ export function generateCrashPoint() {
   return Math.max(1.00, Math.floor(crashPoint * 100) / 100);
 }
 
-export function generateCrashPointFromHash(hashValue) {
-  const h = hashValue % 1;
-  if (h < INSTA_CRASH_THRESHOLD) return 1.00;
-  const crashPoint = HOUSE_EDGE_FACTOR / (1 - h);
-  return Math.max(1.00, Math.floor(crashPoint * 100) / 100);
-}
-
 function computeRateConstant(crashMultiplier) {
   if (crashMultiplier <= 1.00) return 1;
   return Math.log(crashMultiplier) / 8;
@@ -50,25 +43,9 @@ export function getMultiplierAtTime(flightTimeMs, crashMultiplier) {
   return 1 + (crashMultiplier - 1) * (Math.exp(k * t) - 1) / normFactor;
 }
 
-export function getMultiplierRate(multiplier, crashMultiplier) {
-  if (crashMultiplier <= 1.00) return 0;
-  if (multiplier >= crashMultiplier) return 0;
-  const k = computeRateConstant(crashMultiplier);
-  // Derivative of accelerating formula
-  const normFactor = Math.exp(k * 8) - 1;
-  const rate = (crashMultiplier - 1) * k * Math.exp(k * (multiplier - 1)) / normFactor;
-  return rate;
-}
-
 export function formatMultiplier(value) {
   if (value < 10) return value.toFixed(2) + 'x';
   if (value < 100) return value.toFixed(1) + 'x';
   return Math.floor(value) + 'x';
-}
-
-export function getMultiplierColor(multiplier) {
-  if (multiplier < 2) return 'red';
-  if (multiplier < 10) return 'yellow';
-  return 'green';
 }
 

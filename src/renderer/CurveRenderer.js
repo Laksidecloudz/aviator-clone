@@ -40,11 +40,7 @@ export class CurveRenderer {
     grad.addColorStop(0.5, 'rgba(255, 51, 102, 0.15)');
     grad.addColorStop(1, 'rgba(255, 51, 102, 0.02)');
 
-    ctx.beginPath();
-    ctx.moveTo(this._pathX[0], this._pathY[0]);
-    for (let i = 1; i < this._pointCount; i++) {
-      ctx.lineTo(this._pathX[i], this._pathY[i]);
-    }
+    this._tracePath(ctx);
     ctx.lineTo(this._pathX[this._pointCount - 1], bottomY);
     ctx.lineTo(this._pathX[0], bottomY);
     ctx.closePath();

@@ -117,14 +117,18 @@ export class CanvasRenderer {
     ctx.stroke();
   }
 
-  _renderFlying(ctx, w, h, state, dtMs) {
+  _renderCurve(ctx, state, drawMultiplier) {
     this._curve.updatePath(
       this._flightPath,
       state.currentFlightTimeMs,
       state.crashMultiplier
     );
     this._curve.drawFill(ctx);
-    this._curve.draw(ctx, state.multiplier);
+    this._curve.draw(ctx, drawMultiplier);
+  }
+
+  _renderFlying(ctx, w, h, state, dtMs) {
+    this._renderCurve(ctx, state, state.multiplier);
 
     const pos = this._flightPath.getPlanePosition(
       state.currentFlightTimeMs,
@@ -144,14 +148,7 @@ export class CanvasRenderer {
   }
 
   _renderCrashed(ctx, w, h, state, dtMs) {
-    this._curve.updatePath(
-      this._flightPath,
-      state.currentFlightTimeMs,
-      state.crashMultiplier
-    );
-
-    this._curve.drawFill(ctx);
-    this._curve.draw(ctx, state.crashMultiplier);
+    this._renderCurve(ctx, state, state.crashMultiplier);
 
     // Fly-away animation
     if (this._crashTimestamp !== null) {
