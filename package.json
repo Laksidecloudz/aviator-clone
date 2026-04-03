@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "knip": "knip",
-    "electron:build": "npm run build && electron-builder --win"
+    "deploy:web": "npm run build",
+    "electron:build": "ELECTRON_BUILD=true npm run build && electron-builder --win"
   },
   "build": {
     "appId": "com.worldstarbetting.aviator",
